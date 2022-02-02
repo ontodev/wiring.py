@@ -78,7 +78,7 @@ def labeling_demo():
 
     # get label information from file
     # m = wiring_rs.extract_labels(
-    #     "/home/chris/knocean/projects/wiring-py/resources/thickOBI.txt"
+    #     "path/to/rdf-graph"
     # )
     ofn = (
         '["SubClassOf","obo:OBI_2100378",'
@@ -123,9 +123,14 @@ def manchester_demo():
     print("Output: ")
     print(wiring_rs.ofn_2_man(ofn))
 
-    m = wiring_rs.extract_labels(
-        "/home/chris/knocean/projects/wiring-py/resources/thickOBI.txt"
-    )
+    # m = wiring_rs.extract_labels(
+    #    "path/to/rdf-graph"
+    # )
+
+    m = {
+        '"obo:CHEBI_33262"': '"test_label"',
+        '"obo:RO_0000052"': '"test_label_2"',
+    }
 
     labeled = wiring_rs.ofn_labeling(ofn, m)
     print(wiring_rs.ofn_2_man(labeled))
