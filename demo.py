@@ -29,8 +29,8 @@ def typing_demo():
     # Wiring uses JSON under the hood.
     # So, '"s"' is a string containing a JSON string
     m = {
-        '"obo:CHEBI_33262"': {'"owl:Class"'},
-        '"obo:RO_0000052"': {'"owl:ObjectProperty"'},
+        "obo:CHEBI_33262": {"owl:Class"},
+        "obo:RO_0000052": {"owl:ObjectProperty"},
     }
 
     # m = wiring_rs.extract_types(
@@ -72,8 +72,8 @@ def typing_demo():
 
 def labeling_demo():
     m = {
-        '"obo:CHEBI_33262"': '"test_label"',
-        '"obo:RO_0000052"': '"test_label_2"',
+        "obo:CHEBI_33262": "test_label",
+        "obo:RO_0000052": "test_label_2",
     }
 
     # get label information from file
@@ -128,8 +128,8 @@ def manchester_demo():
     # )
 
     m = {
-        '"obo:CHEBI_33262"': '"test_label"',
-        '"obo:RO_0000052"': '"test_label_2"',
+        "obo:CHEBI_33262": "test_label",
+        "obo:RO_0000052": "test_label_2",
     }
 
     labeled = wiring_rs.ofn_labeling(ofn, m)
