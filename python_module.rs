@@ -7,9 +7,32 @@ use crate::ofn_typing::typing::extract_typing as extract_typing;
 use crate::ofn_labeling::ofn_parser::parse_ofn as labeling; 
 use crate::ofn_labeling::labeling::extract_labeling as extract_labeling; 
 use crate::ofn2thick::ofn_parser::parse_ofn as ofn2t; 
+use crate::ldtab2ofn::thick_triple_parser::parse_thick_triple as ldtab_parser; 
+use crate::ofn_util::signature::extract as extract_signature; 
 use crate::ofn2man::parser::parse_ofn as ofn2man; 
 use std::collections::HashMap;
 use std::collections::HashSet;
+
+#[pyfunction]
+fn get_signature(ofn: &str) -> HashSet<String> { 
+
+    let v : Value = serde_json::from_str(ofn).unwrap(); 
+    let signature : Vec<Value> = extract_signature(&v);
+
+    let mut res = HashSet::new();
+
+    for s in signature.iter() {
+        res.insert(String::from(s.as_str().unwrap()));
+    } 
+    res 
+}
+
+#[pyfunction]
+fn ldtab_2_ofn(s : &str, p: &str, o: &str) -> String { 
+
+    let triple : Value = ldtab_parser(s,p,o);
+    format!("{}", triple)
+}
 
 #[pyfunction]
 fn thick_2_ofn(t : &str) -> String { 
@@ -65,6 +88,8 @@ fn ofn_2_man(t: &str) -> String {
 #[pymodule]
 fn wiring_rs(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(thick_2_ofn, m)?)?;
+    m.add_function(wrap_pyfunction!(ldtab_2_ofn, m)?)?;
+    m.add_function(wrap_pyfunction!(get_signature, m)?)?;
     m.add_function(wrap_pyfunction!(ofn_typing, m)?)?;
     m.add_function(wrap_pyfunction!(ofn_labeling, m)?)?;
     m.add_function(wrap_pyfunction!(ofn_2_man, m)?)?;
