@@ -2,6 +2,31 @@ import wiring_rs
 import json
 
 
+def ldtab_2_ofn_demo():
+    # ldtab contains columns 'subject','predicate','object'
+    subject = "obo:OBI_0001636"
+    predicate = "rdfs:subClassOf"
+    object = {
+        "owl:someValuesFrom": [{"datatype": "_IRI", "object": "obo:OBI_0500000"}],
+        "rdf:type": [{"datatype": "_IRI", "object": "owl:Restriction"}],
+        "owl:onProperty": [{"datatype": "_IRI", "object": "obo:BFO_0000050"}],
+    }
+    # NB: the converstion to JSON is not necessary when working with an LDTab table
+    object_string = json.dumps(object)
+    print("======")
+    print("DEMO: LDTab to OFN-S expression")
+    print("-------------------------------")
+    print("Input: ")
+    print("")
+    print("Subject: " + subject)
+    print("Predicate: " + predicate)
+    print("Object: " + str(object))
+    print("")
+    print("Output: ")
+    print(wiring_rs.ldtab_2_ofn(subject, predicate, object_string))
+    print("======")
+
+
 def thick_2_ofn_demo():
     triple = {
         "subject": "obo:OBI_0001636",
@@ -168,3 +193,5 @@ if __name__ == "__main__":
     manchester_demo()
     print("")
     ofn_2_thick_demo()
+    print("")
+    ldtab_2_ofn_demo()
