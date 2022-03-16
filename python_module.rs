@@ -8,10 +8,13 @@ use crate::ofn_labeling::ofn_parser::parse_ofn as labeling;
 use crate::ofn_labeling::labeling::extract_labeling as extract_labeling; 
 use crate::ofn2thick::ofn_parser::parse_ofn as ofn2t; 
 use crate::ldtab2ofn::thick_triple_parser::parse_thick_triple as ldtab_parser; 
+use crate::ldtab2ofn::thick_triple_parser::parse_thick_triple_object as parse_object; 
+use crate::ldtab2ofn::class_translation::translate as object_translation; 
 use crate::ofn_util::signature::extract as extract_signature; 
 use crate::ofn2man::parser::parse_ofn as ofn2man; 
 use std::collections::HashMap;
 use std::collections::HashSet;
+use crate::owl::thick_triple as tt;
 
 #[pyfunction]
 fn get_signature(ofn: &str) -> HashSet<String> { 
@@ -26,6 +29,15 @@ fn get_signature(ofn: &str) -> HashSet<String> {
     } 
     res 
 }
+
+#[pyfunction]
+fn object_2_ofn(obj: &str) -> String { 
+
+    let object : tt::OWL = parse_object(obj);
+    let ofn = object_translation(&object);
+    format!("{}", ofn)
+}
+
 
 #[pyfunction]
 fn ldtab_2_ofn(s : &str, p: &str, o: &str) -> String { 
@@ -89,6 +101,7 @@ fn ofn_2_man(t: &str) -> String {
 fn wiring_rs(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(thick_2_ofn, m)?)?;
     m.add_function(wrap_pyfunction!(ldtab_2_ofn, m)?)?;
+    m.add_function(wrap_pyfunction!(object_2_ofn, m)?)?;
     m.add_function(wrap_pyfunction!(get_signature, m)?)?;
     m.add_function(wrap_pyfunction!(ofn_typing, m)?)?;
     m.add_function(wrap_pyfunction!(ofn_labeling, m)?)?;
