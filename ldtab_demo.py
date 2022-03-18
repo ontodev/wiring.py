@@ -80,12 +80,14 @@ def object2omn(connection, table, json):
     typed = wiring_rs.ofn_typing(ofn, types)
     # 5. labelling (wiring.rs)
     labeled = wiring_rs.ofn_labeling(typed, labels)
-    # 6. manchester string (wiring.rs)
+    # 6. Manchester string (wiring.rs)
     man = wiring_rs.ofn_2_man(labeled)
     return man
 
 
-# this (most certainly) results in duplicate databse queries
+# this results in duplicate database queries
+# in the case different JSON objects contain the same named entities.
+# This is a common case. So, we should avoid this.
 # def objects2omn(connection, table, jsons):
 #    mans = []
 #    for json in jsons:
@@ -93,11 +95,13 @@ def object2omn(connection, table, json):
 #    return mans
 
 
-# TODO: use type hints? (there are differences between different versions - ignore for now)
+# TODO: use type hints?
 # from typing import List, Set, Dict, Tuple, Optional
+# -> there are differences between type hints in Python versions 3.8 and 3.9
+# -> ignore for now
 def objects2omn(connection, table, jsons):
     ofns = []
-    # 1. first convert evetything to ofn
+    # 1. first convert everything to ofn
     for json in jsons:
         ofns.append(wiring_rs.object_2_ofn(json))
 
@@ -126,12 +130,12 @@ def objects2omn(connection, table, jsons):
     for ofn in ofns:
         typed.append(wiring_rs.ofn_typing(ofn, type_map))
 
-    # 6. labelling
+    # 6. labelling (requires correctly typed OFN S-expressions)
     labelled = []
     for ofn in typed:
         labelled.append(wiring_rs.ofn_labeling(ofn, label_map))
 
-    # 7. manchester
+    # 7. Manchester
     man = []
     for ofn in labelled:
         man.append(wiring_rs.ofn_2_man(ofn))
@@ -142,12 +146,12 @@ def objects2omn(connection, table, jsons):
 def run_demo_objects2omn(database, subject):
     con = sqlite3.connect(database, check_same_thread=False)
 
-    # create list of json objects
+    # create list of JSON objects
     jsons = []
     for row in get_statements(con, "statement", subject):
         jsons.append(row["object"])
 
-    # create manchester stings
+    # create Manchester stings
     mans = objects2omn(con, "statement", jsons)
 
     # print them side by side
@@ -181,10 +185,10 @@ def run_demo(database, subject):
         # TODO provide support for datatypes
         ofn = wiring_rs.ldtab_2_ofn(subject, predicate, object)
 
-        # fetch typing information relevant for the OFN S-exression
+        # fetch typing information relevant for the OFN S-expression
         types = get_types_of_signature(con, ofn)
 
-        # fetch labelling information relevant for the OFN S-exression
+        # fetch labelling information relevant for the OFN S-expression
         labels = get_labels_of_signature(con, ofn)
 
         # perform typing
@@ -193,7 +197,7 @@ def run_demo(database, subject):
         # perform labelling (this requires a correctly typed OFN S-expression)
         labeled = wiring_rs.ofn_labeling(typed, labels)
 
-        # convert to manchester syntax
+        # convert to Manchester syntax
         man = wiring_rs.ofn_2_man(typed)
         lab_man = wiring_rs.ofn_2_man(labeled)
 
