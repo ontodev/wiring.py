@@ -85,12 +85,86 @@ def object2omn(connection, table, json):
     return man
 
 
+# this (most certainly) results in duplicate databse queries
+# def objects2omn(connection, table, jsons):
+#    mans = []
+#    for json in jsons:
+#        mans.append(object2omn(json))
+#    return mans
+
+
+# TODO: use type hints? (there are differences between different versions - ignore for now)
+# from typing import List, Set, Dict, Tuple, Optional
+def objects2omn(connection, table, jsons):
+    ofns = []
+    # 1. first convert evetything to ofn
+    for json in jsons:
+        ofns.append(wiring_rs.object_2_ofn(json))
+
+    # 2. get signature for all terms
+    signature = set()
+    for ofn in ofns:
+        signature = signature.union(wiring_rs.get_signature(ofn))
+
+    # 3. get typing information for signature
+    type_map = {}
+    for s in signature:
+        types = get_types(connection, s)
+        if types:
+            type_map[s] = types
+
+    # 4. get labelling information for signature
+    label_map = {}
+    for s in signature:
+        labels = get_labels(connection, s)
+        if labels:
+            # just use one label (we assume labels are unique)
+            label_map[s] = labels.pop()
+
+    # 5. typing
+    typed = []
+    for ofn in ofns:
+        typed.append(wiring_rs.ofn_typing(ofn, type_map))
+
+    # 6. labelling
+    labelled = []
+    for ofn in typed:
+        labelled.append(wiring_rs.ofn_labeling(ofn, label_map))
+
+    # 7. manchester
+    man = []
+    for ofn in labelled:
+        man.append(wiring_rs.ofn_2_man(ofn))
+
+    return man
+
+
+def run_demo_3(database, subject):
+    con = sqlite3.connect(database, check_same_thread=False)
+
+    # create list of json objects
+    jsons = []
+    for row in get_statements(con, "statement", subject):
+        jsons.append(row["object"])
+
+    # create manchester stings
+    mans = objects2omn(con, "statement", jsons)
+
+    # print them side by side
+    for i in range(len(jsons)):
+        print("===")
+        print(jsons[i])
+        print(mans[i])
+        print("===")
+
+
 def run_demo_2(database, subject):
     con = sqlite3.connect(database, check_same_thread=False)
     for row in get_statements(con, "statement", subject):
+        print(object2omn(con, "statement", row["object"]))
         # check for _JSON
-        if row["datatype"] == "_JSON":
-            print(object2omn(con, "statement", row["object"]))
+        # if row["datatype"] == "_JSON":
+        #    print(object2omn(con, "statement", row["object"]))
 
 
 def run_demo(database, subject):
@@ -144,4 +218,5 @@ if __name__ == "__main__":
     subject = sys.argv[2]
 
     # run_demo(database, subject)
-    run_demo_2(database, subject)
+    # run_demo_2(database, subject)
+    run_demo_3(database, subject)
