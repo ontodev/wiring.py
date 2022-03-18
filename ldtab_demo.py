@@ -139,7 +139,7 @@ def objects2omn(connection, table, jsons):
     return man
 
 
-def run_demo_3(database, subject):
+def run_demo_objects2omn(database, subject):
     con = sqlite3.connect(database, check_same_thread=False)
 
     # create list of json objects
@@ -158,13 +158,10 @@ def run_demo_3(database, subject):
         print("===")
 
 
-def run_demo_2(database, subject):
+def run_demo_object2omn(database, subject):
     con = sqlite3.connect(database, check_same_thread=False)
     for row in get_statements(con, "statement", subject):
         print(object2omn(con, "statement", row["object"]))
-        # check for _JSON
-        # if row["datatype"] == "_JSON":
-        #    print(object2omn(con, "statement", row["object"]))
 
 
 def run_demo(database, subject):
@@ -218,5 +215,5 @@ if __name__ == "__main__":
     subject = sys.argv[2]
 
     # run_demo(database, subject)
-    # run_demo_2(database, subject)
-    run_demo_3(database, subject)
+    # run_demo_object2omn(database, subject)
+    run_demo_objects2omn(database, subject)
