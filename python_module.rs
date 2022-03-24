@@ -10,6 +10,7 @@ use crate::ofn2thick::ofn_parser::parse_ofn as ofn2t;
 use crate::ldtab2ofn::thick_triple_parser::parse_thick_triple as ldtab_parser; 
 use crate::ldtab2ofn::thick_triple_parser::parse_thick_triple_object as parse_object; 
 use crate::ldtab2ofn::class_translation::translate as object_translation; 
+use crate::ofn_2_rdfa::class_translation::translate as rdfa_object_translation; 
 use crate::ofn_util::signature::extract as extract_signature; 
 use crate::ofn2man::parser::parse_ofn as ofn2man; 
 use std::collections::HashMap;
@@ -38,6 +39,13 @@ fn object_2_ofn(obj: &str) -> String {
     format!("{}", ofn)
 }
 
+#[pyfunction]
+fn object_2_rdfa(obj: &str) -> String {
+
+    let ofn : Value = serde_json::from_str(obj).unwrap(); 
+    let rdfa = rdfa_object_translation(&ofn, None);
+    format!("{}", rdfa) 
+} 
 
 #[pyfunction]
 fn ldtab_2_ofn(s : &str, p: &str, o: &str) -> String { 
@@ -102,6 +110,7 @@ fn wiring_rs(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(thick_2_ofn, m)?)?;
     m.add_function(wrap_pyfunction!(ldtab_2_ofn, m)?)?;
     m.add_function(wrap_pyfunction!(object_2_ofn, m)?)?;
+    m.add_function(wrap_pyfunction!(object_2_rdfa, m)?)?;
     m.add_function(wrap_pyfunction!(get_signature, m)?)?;
     m.add_function(wrap_pyfunction!(ofn_typing, m)?)?;
     m.add_function(wrap_pyfunction!(ofn_labeling, m)?)?;
