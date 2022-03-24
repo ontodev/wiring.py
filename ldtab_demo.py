@@ -69,6 +69,23 @@ def get_statements(connection, table, subject):
     return cur.execute(query)
 
 
+def object2rdfa(connection, table, json):
+    # 1. convert json to OFN (wiring.rs)
+    ofn = wiring_rs.object_2_ofn(json)
+    # 2. get types from database (wiring.py)
+    types = get_types_of_signature(connection, ofn)
+    # 3. get labels from database (wiring.py)
+    labels = get_labels_of_signature(connection, ofn)
+    # 4. typing (wiring.rs)
+    typed = wiring_rs.ofn_typing(ofn, types)
+    # 5. labelling (wiring.rs)
+    labeled = wiring_rs.ofn_labeling(typed, labels)
+    # 6. RDFa (wiring.rs)
+    rdfa = wiring_rs.object_2_rdfa(labeled)
+
+    return rdfa
+
+
 def object2omn(connection, table, json):
     # 1. convert json to OFN (wiring.rs)
     ofn = wiring_rs.object_2_ofn(json)
@@ -168,6 +185,12 @@ def run_demo_object2omn(database, subject):
         print(object2omn(con, "statement", row["object"]))
 
 
+def run_demo_object2rdfa(database, subject):
+    con = sqlite3.connect(database, check_same_thread=False)
+    for row in get_statements(con, "statement", subject):
+        print(object2rdfa(con, "statement", row["object"]))
+
+
 def run_demo(database, subject):
 
     # connection to database
@@ -220,4 +243,5 @@ if __name__ == "__main__":
 
     # run_demo(database, subject)
     # run_demo_object2omn(database, subject)
-    run_demo_objects2omn(database, subject)
+    run_demo_object2rdfa(database, subject)
+    # run_demo_objects2omn(database, subject)
