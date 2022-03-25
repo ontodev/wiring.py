@@ -40,10 +40,10 @@ fn object_2_ofn(obj: &str) -> String {
 }
 
 #[pyfunction]
-fn object_2_rdfa(obj: &str) -> String {
+fn object_2_rdfa(obj: &str, m : HashMap<String, String>) -> String {
 
     let ofn : Value = serde_json::from_str(obj).unwrap(); 
-    let rdfa = rdfa_object_translation(&ofn, None);
+    let rdfa = rdfa_object_translation(&ofn, &m, None);
     format!("{}", rdfa) 
 } 
 
