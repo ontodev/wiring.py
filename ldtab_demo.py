@@ -78,10 +78,15 @@ def object2rdfa(connection, table, json):
     labels = get_labels_of_signature(connection, ofn)
     # 4. typing (wiring.rs)
     typed = wiring_rs.ofn_typing(ofn, types)
+
+    # NO labelling
     # 5. labelling (wiring.rs)
-    labeled = wiring_rs.ofn_labeling(typed, labels)
+    # labeled = wiring_rs.ofn_labeling(typed, labels)
+
+    # NB: RDFa requires information about IRIs and their labels.
+    # So, we need to pass typed OFN S-expressions AND labels separately.
     # 6. RDFa (wiring.rs)
-    rdfa = wiring_rs.object_2_rdfa(labeled)
+    rdfa = wiring_rs.object_2_rdfa(typed, labels)
 
     return rdfa
 
