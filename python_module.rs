@@ -12,7 +12,8 @@ use crate::ldtab2ofn::thick_triple_parser::parse_thick_triple_object as parse_ob
 use crate::ldtab2ofn::class_translation::translate as object_translation; 
 use crate::ofn_2_rdfa::class_translation::translate as rdfa_object_translation; 
 use crate::ofn_util::signature::extract as extract_signature; 
-use crate::ofn2man::parser::parse_ofn as ofn2man; 
+use crate::ofn2man::parser::parse_ofn as ofn2man;
+use crate::ofn2ldtab::ofn_parser::parse_ofn as ofn2ldtab; //currently only supports OWL class expression axioms
 use std::collections::HashMap;
 use std::collections::HashSet;
 use crate::owl::thick_triple as tt;
@@ -101,6 +102,13 @@ fn ofn_2_man(t: &str) -> String {
     format!("{}", man) 
 }
 
+#[pyfunction] 
+fn ofn_2_ldtab(t: &str) -> String { 
+
+    let json = ofn2ldtab(t);
+    format!("{}", json) 
+}
+
 
 /// A Python module implemented in Rust. The name of this function must match
 /// the `lib.name` setting in the `Cargo.toml`, else Python will not be able to
@@ -116,6 +124,7 @@ fn wiring_rs(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(ofn_labeling, m)?)?;
     m.add_function(wrap_pyfunction!(ofn_2_man, m)?)?;
     m.add_function(wrap_pyfunction!(ofn_2_thick, m)?)?;
+    m.add_function(wrap_pyfunction!(ofn_2_ldtab, m)?)?;
     m.add_function(wrap_pyfunction!(extract_labels, m)?)?;
     m.add_function(wrap_pyfunction!(extract_types, m)?)?;
 
