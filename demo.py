@@ -183,6 +183,27 @@ def ofn_2_thick_demo():
     print("======")
 
 
+def ofn_2_ldtab_demo():
+    ofn = (
+        '["SubClassOf","obo:OBI_2100378",'
+        '["ObjectIntersectionOf",'
+        '["ObjectSomeValuesFrom",'
+        '"obo:BFO_0000055",'
+        '["ObjectIntersectionOf","obo:OBI_0000275",'
+        '["ObjectSomeValuesFrom","obo:RO_0000052","obo:CHEBI_33262"]]],'
+        '["ObjectSomeValuesFrom","obo:OBI_0000293","obo:CHEBI_33262"]]]'
+    )
+
+    print("======")
+    print("DEMO: OFN-S expression to LDTab JSON")
+    print("--------------------------------------")
+    print("Input: ")
+    print(ofn)
+    print("Output: ")
+    print(wiring_rs.ofn_2_ldtab(ofn))
+    print("======")
+
+
 if __name__ == "__main__":
     thick_2_ofn_demo()
     print("")
@@ -195,3 +216,5 @@ if __name__ == "__main__":
     ofn_2_thick_demo()
     print("")
     ldtab_2_ofn_demo()
+    print("")
+    ofn_2_ldtab_demo()
