@@ -1,0 +1,277 @@
+name: Build Wheels
+
+on: [push]
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+
+      - uses: actions/checkout@v3
+
+      - name: Checkout Rust library  
+        uses: actions/checkout@v3
+        with:
+            repository: ontodev/wiring.rs
+            path: wiring.rs
+
+      - uses: actions/setup-python@v3
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          default: true
+
+      - name: Setup Bindings 
+        run: |
+            mv python_module.rs wiring.rs/src/
+            rm wiring.rs/Cargo.toml
+            mv Cargo.toml wiring.rs/ 
+            echo "mod python_module;" >> wiring.rs/src/lib.rs 
+
+      - name: Build wheels - x86_64 
+        uses: messense/maturin-action@v1
+        with:
+          target: x86_64
+          args: --release --out dist -m wiring.rs/Cargo.toml
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: dist
+
+
+  windows:
+    runs-on: windows-latest
+    #strategy:
+    #  matrix:
+    #    target: [x64, x86]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Checkout Rust library  
+        uses: actions/checkout@v3
+        with:
+            repository: ontodev/wiring.rs
+            path: wiring.rs
+
+      - uses: actions/setup-python@v3
+          
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          default: true
+
+      - name: Setup Bindings 
+        run: |
+            mv python_module.rs wiring.rs/src/
+            rm wiring.rs/Cargo.toml
+            mv Cargo.toml wiring.rs/ 
+            echo "mod python_module;" >> wiring.rs/src/lib.rs 
+
+      - name: Build wheels
+        run: | 
+            pip install -U pip maturin
+            maturin build --release --out dist -m wiring.rs/Cargo.toml
+
+        #Fails on windows
+        #uses: messense/maturin-action@v1
+        #with:
+        #  target: ${{ matrix.target }}
+        #  args: --release --out dist -m wiring.rs/Cargo.toml
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: dist
+
+
+  linux:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-18.04]
+        target: [x86_64] #, i686] 
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Checkout Rust library  
+        uses: actions/checkout@v3
+        with:
+            repository: ontodev/wiring.rs
+            path: wiring.rs
+
+      - uses: actions/setup-python@v3
+          
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          default: true
+
+      - name: Setup Bindings 
+        run: |
+            mv python_module.rs wiring.rs/src/
+            rm wiring.rs/Cargo.toml
+            mv Cargo.toml wiring.rs/ 
+            echo "mod python_module;" >> wiring.rs/src/lib.rs 
+
+      - name: Build wheels
+        uses: messense/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --out dist -m wiring.rs/Cargo.toml
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: dist
+
+
+  musllinux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-musl
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Checkout Rust library  
+        uses: actions/checkout@v3
+        with:
+            repository: ontodev/wiring.rs
+            path: wiring.rs
+
+      - uses: actions/setup-python@v3
+          
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          default: true
+
+      - name: Setup Bindings 
+        run: |
+            mv python_module.rs wiring.rs/src/
+            rm wiring.rs/Cargo.toml
+            mv Cargo.toml wiring.rs/ 
+            echo "mod python_module;" >> wiring.rs/src/lib.rs 
+
+      - name: Build wheels
+        uses: messense/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          manylinux: musllinux_1_2 
+          args: --release --out dist -m wiring.rs/Cargo.toml
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: dist
+
+
+  linux-cross:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        #platform: [manylinux2014, manylinux_2_24] 
+        target: [aarch64, armv7, s390x, ppc64le, ppc64]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+            profile: minimal
+            toolchain: stable
+            override: true
+
+      - uses: actions/setup-python@v3
+
+      - name: Checkout Rust library  
+        uses: actions/checkout@v3
+        with:
+            repository: ontodev/wiring.rs
+            path: wiring.rs
+
+      - name: Setup Bindings 
+        run: |
+            mv python_module.rs wiring.rs/src/
+            rm wiring.rs/Cargo.toml
+            mv Cargo.toml wiring.rs/ 
+            echo "mod python_module;" >> wiring.rs/src/lib.rs 
+
+      - uses: messense/maturin-action@v1
+        with:
+            maturin-version: latest
+            target: ${{ matrix.target }} 
+            manylinux: auto
+            args: --release --out dist -m wiring.rs/Cargo.toml
+
+      - name: Download wheel 
+        uses: actions/upload-artifact@v3
+        with:
+            name: wheels
+            path: dist
+
+
+  musllinux-cross:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: 
+          - target: aarch64-unknown-linux-musl
+            arch: aarch64
+          - target: armv7-unknown-linux-musleabihf
+            arch: armv7 
+    steps: 
+
+      - uses: actions/checkout@v3 
+
+      - name: Checkout Rust library  
+        uses: actions/checkout@v3
+        with:
+            repository: ontodev/wiring.rs
+            path: wiring.rs
+
+      - uses: actions/setup-python@v3 
+
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+            profile: minimal
+            toolchain: stable
+            override: true
+
+      - name: Setup Bindings 
+        run: |
+            mv python_module.rs wiring.rs/src/
+            rm wiring.rs/Cargo.toml
+            mv Cargo.toml wiring.rs/ 
+            echo "mod python_module;" >> wiring.rs/src/lib.rs 
+
+      - name: Build Wheels - manylinux
+        uses: messense/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          manylinux: musllinux_1_2
+          args: --release --out dist -m wiring.rs/Cargo.toml
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: dist 
