@@ -6,24 +6,10 @@ Wiring for Python
     2. `cd wiring.py`
     3. `git clone git@github.com:ontodev/wiring.rs.git`
     4. `mv python_module.rs wiring.rs/src/`
+    5. `mv Cargo.toml wiring.rs/
     5. `cd wiring.rs`
     6. add the line `mod python_module;` to the end of file `src/lib.rs`
-    7. modify `Cargo.toml` so that it contains the following lines: 
-    ```
-    [lib]
-    name="wiring_rs"
-    crate-type = ["cdylib", "lib"]
 
-    [[bin]]
-    name = "mybin"
-    path = "src/main.rs"
-
-    [dependencies.pyo3]
-    version = "0.14.5"
-    # "extension-module" tells pyo3 we want to build an extension module (skips linking against libpython.so)
-    # "abi3-py36" tells pyo3 (and maturin) to build using the stable ABI with minimum Python version 3.6
-    features = ["extension-module", "abi3-py36"]
-    ```
 2. Installing Maturin 
 
     1. `python3 -m venv .venv`
