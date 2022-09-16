@@ -6,7 +6,7 @@ Wiring for Python
     2. `cd wiring.py`
     3. `git clone git@github.com:ontodev/wiring.rs.git`
     4. `mv python_module.rs wiring.rs/src/`
-    5. `mv Cargo.toml wiring.rs/
+    5. `mv Cargo.toml wiring.rs/`
     5. `cd wiring.rs`
     6. add the line `mod python_module;` to the end of file `src/lib.rs`
 
