@@ -1,19 +1,20 @@
 use pyo3::prelude::*;
 use serde_json::{Value};
 //use serde_json::json; 
-use crate::thick2ofn::thick_triple_parser::parse_triple as t2ofn; 
-use crate::ofn_typing::ofn_parser::parse_ofn as typing; 
+use crate::thick_2_ofn::translation::thick_2_ofn as t2ofn; 
+use crate::ofn_typing::translation::type_ofn as typing; 
 use crate::ofn_typing::typing::extract_typing as extract_typing; 
-use crate::ofn_labeling::ofn_parser::parse_ofn as labeling; 
+use crate::ofn_labeling::translation::label_ofn as labeling; 
 use crate::ofn_labeling::labeling::extract_labeling as extract_labeling; 
-use crate::ofn2thick::ofn_parser::parse_ofn as ofn2t; 
-use crate::ldtab2ofn::thick_triple_parser::parse_thick_triple as ldtab_parser; 
-use crate::ldtab2ofn::thick_triple_parser::parse_thick_triple_object as parse_object; 
-use crate::ldtab2ofn::class_translation::translate as object_translation; 
+use crate::ofn_2_thick::translation::ofn_2_thick as ofn2t; 
+use crate::ldtab_2_ofn::translation::thick_triple_2_ofn as translate_triple; 
+use crate::util::parser::parse_thick_triple_object as parse_object; 
+use crate::ldtab_2_ofn::class_translation::translate as object_translation; 
 use crate::ofn_2_rdfa::class_translation::translate as rdfa_object_translation; 
-use crate::ofn_util::signature::extract as extract_signature; 
-use crate::ofn2man::parser::parse_ofn as ofn2man;
-use crate::ofn2ldtab::ofn_parser::parse_ofn as ofn2ldtab; //currently only supports OWL class expression axioms
+use crate::util::signature::extract as extract_signature; 
+use crate::ofn_2_man::translation::ofn_2_man as ofn2man;
+use crate::ofn_2_ldtab::translation::ofn_2_thick_triple as ofn2ldtab; //currently only supports OWL class expression axioms
+use crate::ofn_2_ldtab::util::sort_value as sort_value; 
 use std::collections::HashMap;
 use std::collections::HashSet;
 use crate::owl::thick_triple as tt;
@@ -49,24 +50,28 @@ fn object_2_rdfa(obj: &str, m : HashMap<String, String>) -> String {
 } 
 
 #[pyfunction]
-fn ldtab_2_ofn(s : &str, p: &str, o: &str) -> String { 
+fn ldtab_2_ofn(t: &str) -> String { 
 
-    let triple : Value = ldtab_parser(s,p,o);
-    format!("{}", triple)
+    let triple : Value = serde_json::from_str(t).unwrap();
+    let ofn : Value = translate_triple(&triple);
+    format!("{}", ofn)
 }
 
 #[pyfunction]
 fn thick_2_ofn(t : &str) -> String { 
 
     let triple : Value = serde_json::from_str(t).unwrap();
-    let ofn = t2ofn(triple.to_string().as_str());
+    let ofn = t2ofn(&triple);
+    //let ofn = t2ofn(triple.to_string().as_str());
     format!("{}", ofn)
 }
 
 #[pyfunction]
 fn ofn_2_thick(t : &str) -> String { 
 
-    ofn2t(t).to_string()
+    let v : Value = serde_json::from_str(t).unwrap(); 
+    let ofn = ofn2t(&v);
+    ofn.to_string()
 }
 
 #[pyfunction] 
@@ -98,15 +103,25 @@ fn ofn_labeling(t: &str, m : HashMap<String, String>) -> String {
 #[pyfunction] 
 fn ofn_2_man(t: &str) -> String { 
 
-    let man = ofn2man(t);
+    let v : Value = serde_json::from_str(t).unwrap(); 
+    let man = ofn2man(&v);
     format!("{}", man) 
 }
 
 #[pyfunction] 
 fn ofn_2_ldtab(t: &str) -> String { 
 
-    let json = ofn2ldtab(t);
+    let v : Value = serde_json::from_str(t).unwrap(); 
+    let json = ofn2ldtab(&v);
     format!("{}", json) 
+}
+
+#[pyfunction] 
+fn sort_json(t: &str) -> String { 
+
+    let ofn : Value = serde_json::from_str(t).unwrap(); 
+    let ofn_sorted = sort_value(&ofn); 
+    format!("{}", ofn_sorted) 
 }
 
 
@@ -127,6 +142,7 @@ fn wiring_rs(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(ofn_2_ldtab, m)?)?;
     m.add_function(wrap_pyfunction!(extract_labels, m)?)?;
     m.add_function(wrap_pyfunction!(extract_types, m)?)?;
+    m.add_function(wrap_pyfunction!(sort_json, m)?)?;
 
     Ok(())
 }

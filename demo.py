@@ -2,28 +2,48 @@ import wiring_rs
 import json
 
 
+def json_sort():
+    triple = {
+        "subject": "obo:OBI_0001636",
+        "predicate": "rdfs:subClassOf",
+        "object": {
+            "owl:someValuesFrom": [{"object": "obo:OBI_0500000"}],
+            "rdf:type": [{"object": "owl:Restriction"}, {"object": "owl:Class"}],
+            "owl:onProperty": [{"object": "obo:BFO_0000050"}],
+        },
+    }
+    triple_string = json.dumps(triple)
+    print("======")
+    print("DEMO: Thick to OFN-S expression")
+    print("-------------------------------")
+    print("Input: ")
+    print(triple_string)
+    print("Output: ")
+    print(wiring_rs.sort_json(triple_string))
+    print("======")
+
+
 def ldtab_2_ofn_demo():
-    # ldtab contains columns 'subject','predicate','object'
-    subject = "obo:OBI_0001636"
-    predicate = "rdfs:subClassOf"
-    object = {
-        "owl:someValuesFrom": [{"datatype": "_IRI", "object": "obo:OBI_0500000"}],
-        "rdf:type": [{"datatype": "_IRI", "object": "owl:Restriction"}],
-        "owl:onProperty": [{"datatype": "_IRI", "object": "obo:BFO_0000050"}],
+    triple = {
+        "subject": "obo:OBI_0001636",
+        "predicate": "rdfs:subClassOf",
+        "object": {
+            "owl:someValuesFrom": [{"datatype": "_IRI", "object": "obo:OBI_0500000"}],
+            "rdf:type": [{"datatype": "_IRI", "object": "owl:Restriction"}],
+            "owl:onProperty": [{"datatype": "_IRI", "object": "obo:BFO_0000050"}],
+        },
     }
     # NB: the converstion to JSON is not necessary when working with an LDTab table
-    object_string = json.dumps(object)
+    triple_string = json.dumps(triple)
     print("======")
     print("DEMO: LDTab to OFN-S expression")
     print("-------------------------------")
     print("Input: ")
     print("")
-    print("Subject: " + subject)
-    print("Predicate: " + predicate)
-    print("Object: " + str(object))
+    print(triple_string)
     print("")
     print("Output: ")
-    print(wiring_rs.ldtab_2_ofn(subject, predicate, object_string))
+    print(wiring_rs.ldtab_2_ofn(triple_string))
     print("======")
 
 
@@ -202,6 +222,9 @@ def ofn_2_ldtab_demo():
     print("Output: ")
     print(wiring_rs.ofn_2_ldtab(ofn))
     print("======")
+    print("Round trip (without type information): ")
+    print(wiring_rs.ldtab_2_ofn(wiring_rs.ofn_2_ldtab(ofn)))
+    print("======")
 
 
 if __name__ == "__main__":
@@ -218,3 +241,5 @@ if __name__ == "__main__":
     ldtab_2_ofn_demo()
     print("")
     ofn_2_ldtab_demo()
+    print("")
+    json_sort()
