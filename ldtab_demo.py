@@ -12,13 +12,9 @@ def dict_factory(cursor, row):
 
 def get_types(connection, subject):
     cur = connection.cursor()
-    query = (
-        f"SELECT * FROM statement WHERE "
-        f"subject='{subject}' AND "
-        f"predicate='rdf:type'"
-    )
+    query = "SELECT * FROM statement WHERE subject = ? AND predicate = 'rdf:type'"
     types = set()
-    for row in cur.execute(query):
+    for row in cur.execute(query, (subject,)):
         types.add(row["object"])
 
     return types
@@ -26,13 +22,9 @@ def get_types(connection, subject):
 
 def get_labels(connection, subject):
     cur = connection.cursor()
-    query = (
-        f"SELECT * FROM statement WHERE "
-        f"subject='{subject}' AND "
-        f"predicate='rdfs:label'"
-    )
     label = set()
-    for row in cur.execute(query):
+    query = "SELECT * FROM statement WHERE subject = ? AND predicate = 'rdfs:label'"
+    for row in cur.execute(query, (subject,)):
         label.add(row["object"])
 
     return label
@@ -65,8 +57,9 @@ def get_labels_of_signature(connection, ofn):
 def get_statements(connection, table, subject):
     connection.row_factory = dict_factory
     cur = connection.cursor()
-    query = f"SELECT * FROM {table} WHERE subject='{subject}'"
-    return cur.execute(query)
+    query = f"SELECT * FROM {table} WHERE subject = ?"
+    return cur.execute(query, (subject,))
+
 
 
 def object2rdfa(connection, table, json):
@@ -193,7 +186,12 @@ def run_demo_object2omn(database, subject):
 def run_demo_object2rdfa(database, subject):
     con = sqlite3.connect(database, check_same_thread=False)
     for row in get_statements(con, "statement", subject):
+        print("<====>")
+        print("orig")
+        print(row["object"])
+        print("rdfa")
         print(object2rdfa(con, "statement", row["object"]))
+        print("<====>")
 
 
 def run_demo(database, subject):
